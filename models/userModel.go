@@ -8,6 +8,7 @@ import (
 	"time"
 
 	"github.com/dgrijalva/jwt-go"
+	"github.com/google/uuid"
 	"github.com/jinzhu/gorm"
 	"github.com/manpreet1130/library-management/database"
 	"golang.org/x/crypto/bcrypt"
@@ -21,12 +22,13 @@ import (
 // Auth is a required field which will be filled either as 'user' or 'admin'
 type User struct {
 	gorm.Model
-	FirstName string `json:"firstname" validate:"required,min=2,max=30"`
-	LastName  string `json:"lastname"`
-	Email     string `json:"email" validate:"required,email"`
-	Password  string `json:"password" validate:"required,min=5,max=100"`
-	Auth      string `json:"auth" validate:"required"`
-	MyCart    []Book
+	UUID      uuid.UUID `gorm:"primary_key" json:"user_id"`
+	FirstName string    `json:"firstname" validate:"required,min=2,max=30"`
+	LastName  string    `json:"lastname"`
+	Email     string    `json:"email" validate:"required,email"`
+	Password  string    `json:"password" validate:"required,min=5,max=100"`
+	Auth      string    `json:"auth" validate:"required"`
+	Books     []Book
 }
 
 // Check confirms that the email provided isn't already being used
@@ -51,6 +53,7 @@ func (user *User) AddUser() *User {
 		log.Fatal("could not generate hashed password")
 	}
 	user.Password = string(hashedPassword)
+	user.UUID = uuid.New()
 	db.Create(&user)
 	return user
 }
@@ -141,4 +144,21 @@ func GetUser(cookie *http.Cookie) *User {
 	db.Where("Email = ?", claims.Issuer).Find(&user)
 
 	return user
+}
+
+func (user *User) AddBookToCart(book *Book) *Book {
+	db := database.GetDB()
+	user.Books = append(user.Books, *book)
+	db.Save(&user)
+	return book
+}
+
+func (user *User) GetCartItems() []Book {
+	db := database.GetDB()
+	books := []Book{}
+
+	db.Where("user_uuid = ?", user.UUID).Find(&books)
+
+	return books
+
 }
