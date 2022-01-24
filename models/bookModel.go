@@ -1,6 +1,7 @@
 package models
 
 import (
+	"github.com/google/uuid"
 	"github.com/jinzhu/gorm"
 	"github.com/manpreet1130/library-management/database"
 )
@@ -12,10 +13,11 @@ import (
 // Quantity: required field
 type Book struct {
 	gorm.Model
-	Title    string `json:"title" validate:"required,min=2,max=50"`
-	Author   string `json:"author" validate:"required,min=2,max=50"`
-	Genre    string `json:"genre" validate:"required,min=2,max=50"`
-	Quantity uint64 `json:"quantity" validate:"required,gt=0"`
+	Title    string    `json:"title" validate:"required,min=2,max=50"`
+	Author   string    `json:"author" validate:"required,min=2,max=50"`
+	Genre    string    `json:"genre" validate:"required,min=2,max=50"`
+	Quantity uint64    `json:"quantity" validate:"required,gt=0"`
+	UserUUID uuid.UUID `json:"user_id"`
 }
 
 func GetBooks() []Book {

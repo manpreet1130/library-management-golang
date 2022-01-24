@@ -146,11 +146,19 @@ func GetUser(cookie *http.Cookie) *User {
 	return user
 }
 
-func (user *User) AddBookToCart(book *Book) *Book {
+func (user *User) AddBookToCart(book *Book) (*Book, error) {
 	db := database.GetDB()
+
+	dbBook := &Book{}
+	result := db.Where(Book{Title: book.Title, Author: book.Author}).Find(&dbBook)
+	if result.RowsAffected == 0 {
+		log.Println("Book with this title/author doesn't exist")
+		return book, errors.New("Book doesn't exist")
+	}
+
 	user.Books = append(user.Books, *book)
 	db.Save(&user)
-	return book
+	return book, nil
 }
 
 func (user *User) GetCartItems() []Book {

@@ -34,8 +34,13 @@ func AddToCart(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	addedBook := user.AddBookToCart(book)
-
+	addedBook, err := user.AddBookToCart(book)
+	if err != nil {
+		log.Println("[ADD TO CART] requested book doesn't exist")
+		w.WriteHeader(http.StatusBadRequest)
+		w.Write([]byte("Book with the following title/author doesn't exist."))
+		return
+	}
 	res, _ := json.Marshal(addedBook)
 
 	w.Header().Set("Content-Type", "application/json")

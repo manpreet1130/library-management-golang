@@ -29,6 +29,7 @@ func main() {
 
 	routes.UserRoutes(router)
 	routes.BookRoutes(router)
+	routes.CartRoutes(router)
 	http.Handle("/", router)
 
 	server := &http.Server{
