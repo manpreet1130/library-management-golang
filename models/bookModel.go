@@ -1,6 +1,8 @@
 package models
 
 import (
+	"time"
+
 	"github.com/google/uuid"
 	"github.com/jinzhu/gorm"
 	"github.com/manpreet1130/library-management/database"
@@ -18,6 +20,7 @@ type Book struct {
 	Genre    string    `json:"genre" validate:"required,min=2,max=50"`
 	Quantity uint64    `json:"quantity" validate:"required,gt=0"`
 	CartUUID uuid.UUID `json:"cart_uuid"`
+	Due      time.Time
 }
 
 const ADMIN = "00000000-0000-0000-0000-000000000000"
@@ -51,11 +54,4 @@ func GetBook(title string) *Book {
 	book := &Book{}
 	db.Where("Title = ?", title).Find(&book)
 	return book
-}
-
-func UpdateBook(title string, amount uint64) {
-	book := GetBook(title)
-	db := database.GetDB()
-	book.Quantity += amount
-	db.Save(&book)
 }

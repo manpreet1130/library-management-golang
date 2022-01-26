@@ -55,6 +55,11 @@ func (user *User) AddUser() *User {
 	}
 	user.Password = string(hashedPassword)
 	user.UUID = uuid.New()
+
+	if user.Auth != "admin" {
+		CreateCart(user.UUID)
+	}
+
 	db.Create(&user)
 	return user
 }
@@ -92,10 +97,6 @@ func (user *User) Login() (string, error) {
 	tokenString, err := token.SignedString([]byte(SECRET))
 	dbUser := &User{}
 	db.Where("Email = ?", user.Email).First(&dbUser)
-
-	if dbUser.Auth != "admin" {
-		CreateCart(dbUser.UUID)
-	}
 
 	if err != nil {
 		return "", err

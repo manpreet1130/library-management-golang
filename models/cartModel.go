@@ -15,33 +15,42 @@ type Cart struct {
 	Books    []Book
 }
 
-func CreateCart(id uuid.UUID) {
+func CreateCart(id uuid.UUID) *Cart {
 	db := database.GetDB()
 	cart := &Cart{
 		UUID:     uuid.New(),
 		UserUUID: id,
 	}
 	db.Save(&cart)
+	return cart
 }
 
 func AddToCart(id uuid.UUID, book *Book) (*Book, error) {
 	db := database.GetDB()
-	cart := &Cart{}
-	dbBook := &Book{}
 
-	db.Where("user_uuid = ?", id).Preload("Books").Find(&cart)
+	cart := &Cart{}
+	result := db.Where("user_uuid = ?", id).Preload("Books").Find(&cart)
+	if result.RowsAffected == 0 {
+		cart = CreateCart(id)
+	}
+
 	if cart.UUID == uuid.MustParse(ADMIN) {
 		return book, errors.New("admin logged in, log in as user")
 	}
 
+	dbBook := &Book{}
 	db.Where(Book{Title: book.Title, Author: book.Author}).First(&dbBook)
+
+	if dbBook.Quantity == 0 {
+		return book, errors.New("book out of stock")
+	}
 
 	if book.Quantity > dbBook.Quantity {
 		book.Quantity = dbBook.Quantity
 	}
 
 	userBook := &Book{}
-	result := db.Where(Book{Title: book.Title, Author: book.Author, CartUUID: cart.UUID}).Find(&userBook)
+	result = db.Where(Book{Title: book.Title, Author: book.Author, CartUUID: cart.UUID}).Find(&userBook)
 
 	if result.RowsAffected != 0 {
 		userBook.Quantity += book.Quantity
@@ -67,10 +76,44 @@ func GetCartItems(id uuid.UUID) []Book {
 	return cart.Books
 }
 
-// func (cart *Cart) deleteCartItem(book *Book) {
-// 	db := database.GetDB()
-// 	b := &Book{}
-// 	db.Where(Book{Title: book.Title, Author: book.Author}).First(&b)
+func RemoveFromCart(id uuid.UUID, book *Book) (uint64, error) {
+	db := database.GetDB()
 
-// 	db.Delete(&b)
-// }
+	cart := &Cart{}
+	db.Where("user_uuid = ?", id).Find(&cart)
+
+	dbBook := &Book{}
+	db.Where(Book{Title: book.Title, Author: book.Author}).First(&dbBook)
+
+	cartBook := &Book{}
+	result := db.Where(Book{Title: book.Title, Author: book.Author, CartUUID: cart.UUID}).Find(&cartBook)
+
+	if result.RowsAffected == 0 {
+		return 0, errors.New("this book does not exist in the cart")
+	}
+
+	if book.Quantity > cartBook.Quantity {
+		dbBook.Quantity += cartBook.Quantity
+		cartBook.Quantity = 0
+	} else {
+		cartBook.Quantity -= book.Quantity
+		dbBook.Quantity += book.Quantity
+	}
+
+	if cartBook.Quantity == 0 {
+		db.Delete(&cartBook)
+		return 0, nil
+	}
+
+	db.Save(&cartBook)
+	db.Save(&dbBook)
+	return cartBook.Quantity, nil
+
+}
+
+func EmptyCart(id uuid.UUID) {
+	// db := database.GetDB()
+	// cart := &Cart{}
+	// db.Where("user_uuid = ?", id).Find(&cart)
+	// db.Delete(&cart)
+}

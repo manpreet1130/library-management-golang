@@ -8,4 +8,5 @@ import (
 func CartRoutes(router *mux.Router) {
 	router.HandleFunc("/users/cart", controllers.AddToCart).Methods("POST")
 	router.HandleFunc("/users/cart", controllers.GetCartItems).Methods("GET")
+	router.HandleFunc("/users/cart", controllers.RemoveItemsFromCart).Methods("PUT")
 }
