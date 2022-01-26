@@ -4,7 +4,6 @@ import (
 	"errors"
 	"log"
 	"net/http"
-	"os"
 	"time"
 
 	"github.com/dgrijalva/jwt-go"
@@ -13,6 +12,8 @@ import (
 	"github.com/manpreet1130/library-management/database"
 	"golang.org/x/crypto/bcrypt"
 )
+
+const SECRET = "secretkey"
 
 // User consists of the following fields
 // FirstName is a required field and must consist of a minimum of 2 and a maximum of 30 characters
@@ -28,7 +29,7 @@ type User struct {
 	Email     string    `json:"email" validate:"required,email"`
 	Password  string    `json:"password" validate:"required,min=5,max=100"`
 	Auth      string    `json:"auth" validate:"required"`
-	Books     []Book
+	MyCart    Cart
 }
 
 // Check confirms that the email provided isn't already being used
@@ -82,12 +83,18 @@ func (user *User) ValidateUser() error {
 // saved in a cookie
 // takes in a reference to user and returns a string and error if any
 func (user *User) Login() (string, error) {
+	db := database.GetDB()
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.StandardClaims{
 		Issuer:    user.Email,
 		ExpiresAt: time.Now().Add(time.Minute * 5).Unix(),
 	})
 
-	tokenString, err := token.SignedString([]byte(os.Getenv("SECRET")))
+	tokenString, err := token.SignedString([]byte(SECRET))
+	dbUser := &User{}
+	db.Where("Email = ?", user.Email).First(&dbUser)
+
+	CreateCart(dbUser.UUID)
+
 	if err != nil {
 		return "", err
 	}
@@ -102,7 +109,7 @@ func (user *User) Login() (string, error) {
 func AuthenticateUser(cookie *http.Cookie) error {
 	db := database.GetDB()
 	token, err := jwt.ParseWithClaims(cookie.Value, &jwt.StandardClaims{}, func(t *jwt.Token) (interface{}, error) {
-		return []byte(os.Getenv("SECRET")), nil
+		return []byte(SECRET), nil
 	})
 	if err != nil {
 		return err
@@ -132,7 +139,7 @@ func GetUsers() []User {
 func GetUser(cookie *http.Cookie) *User {
 	db := database.GetDB()
 	token, err := jwt.ParseWithClaims(cookie.Value, &jwt.StandardClaims{}, func(t *jwt.Token) (interface{}, error) {
-		return []byte(os.Getenv("SECRET")), nil
+		return []byte(SECRET), nil
 	})
 	if err != nil {
 		return nil
@@ -144,29 +151,4 @@ func GetUser(cookie *http.Cookie) *User {
 	db.Where("Email = ?", claims.Issuer).Find(&user)
 
 	return user
-}
-
-func (user *User) AddBookToCart(book *Book) (*Book, error) {
-	db := database.GetDB()
-
-	dbBook := &Book{}
-	result := db.Where(Book{Title: book.Title, Author: book.Author}).Find(&dbBook)
-	if result.RowsAffected == 0 {
-		log.Println("Book with this title/author doesn't exist")
-		return book, errors.New("Book doesn't exist")
-	}
-
-	user.Books = append(user.Books, *book)
-	db.Save(&user)
-	return book, nil
-}
-
-func (user *User) GetCartItems() []Book {
-	db := database.GetDB()
-	books := []Book{}
-
-	db.Where("user_uuid = ?", user.UUID).Find(&books)
-
-	return books
-
 }

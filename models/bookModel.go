@@ -17,13 +17,15 @@ type Book struct {
 	Author   string    `json:"author" validate:"required,min=2,max=50"`
 	Genre    string    `json:"genre" validate:"required,min=2,max=50"`
 	Quantity uint64    `json:"quantity" validate:"required,gt=0"`
-	UserUUID uuid.UUID `json:"user_id"`
+	CartUUID uuid.UUID `json:"cart_uuid"`
 }
+
+const ADMIN = "00000000-0000-0000-0000-000000000000"
 
 func GetBooks() []Book {
 	db := database.GetDB()
 	books := []Book{}
-	db.Find(&books)
+	db.Where("cart_uuid = ?", ADMIN).Find(&books)
 	return books
 }
 

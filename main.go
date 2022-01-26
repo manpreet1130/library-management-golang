@@ -18,7 +18,8 @@ import (
 func init() {
 	database.Connect()
 	db := database.GetDB()
-	db.AutoMigrate(&models.User{}, &models.Book{})
+	db.AutoMigrate(&models.User{}, &models.Book{}, &models.Cart{})
+	db.Model(&models.Book{}).AddForeignKey("cart_uuid", "carts(id)", "RESTRICT", "CASCADE")
 }
 
 func main() {

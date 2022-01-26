@@ -34,13 +34,14 @@ func AddToCart(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	addedBook, err := user.AddBookToCart(book)
+	addedBook, err := models.AddToCart(user.UUID, book)
 	if err != nil {
-		log.Println("[ADD TO CART] requested book doesn't exist")
-		w.WriteHeader(http.StatusBadRequest)
-		w.Write([]byte("Book with the following title/author doesn't exist."))
+		log.Println(err)
+		w.WriteHeader(http.StatusInternalServerError)
+		w.Write([]byte("Error occured while adding book to cart"))
 		return
 	}
+
 	res, _ := json.Marshal(addedBook)
 
 	w.Header().Set("Content-Type", "application/json")
@@ -65,7 +66,8 @@ func GetCartItems(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	books := user.GetCartItems()
+	books := models.GetCartItems(user.UUID)
+
 	res, _ := json.Marshal(books)
 
 	log.Println("[GET CART ITEMS] Sending cart items")
