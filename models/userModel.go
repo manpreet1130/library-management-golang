@@ -93,7 +93,9 @@ func (user *User) Login() (string, error) {
 	dbUser := &User{}
 	db.Where("Email = ?", user.Email).First(&dbUser)
 
-	CreateCart(dbUser.UUID)
+	if dbUser.Auth != "admin" {
+		CreateCart(dbUser.UUID)
+	}
 
 	if err != nil {
 		return "", err

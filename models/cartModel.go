@@ -1,6 +1,8 @@
 package models
 
 import (
+	"errors"
+
 	"github.com/google/uuid"
 	"github.com/jinzhu/gorm"
 	"github.com/manpreet1130/library-management/database"
@@ -28,15 +30,29 @@ func AddToCart(id uuid.UUID, book *Book) (*Book, error) {
 	dbBook := &Book{}
 
 	db.Where("user_uuid = ?", id).Preload("Books").Find(&cart)
+	if cart.UUID == uuid.MustParse(ADMIN) {
+		return book, errors.New("admin logged in, log in as user")
+	}
 
 	db.Where(Book{Title: book.Title, Author: book.Author}).First(&dbBook)
 
-	// fmt.Println(cart.Books)
-	cart.Books = append(cart.Books, *book)
+	if book.Quantity > dbBook.Quantity {
+		book.Quantity = dbBook.Quantity
+	}
+
+	userBook := &Book{}
+	result := db.Where(Book{Title: book.Title, Author: book.Author, CartUUID: cart.UUID}).Find(&userBook)
+
+	if result.RowsAffected != 0 {
+		userBook.Quantity += book.Quantity
+		db.Save(&userBook)
+	} else {
+		cart.Books = append(cart.Books, *book)
+		db.Save(&cart)
+	}
 
 	dbBook.Quantity -= book.Quantity
 
-	db.Save(&cart)
 	db.Save(&dbBook)
 
 	return book, nil
@@ -50,3 +66,11 @@ func GetCartItems(id uuid.UUID) []Book {
 
 	return cart.Books
 }
+
+// func (cart *Cart) deleteCartItem(book *Book) {
+// 	db := database.GetDB()
+// 	b := &Book{}
+// 	db.Where(Book{Title: book.Title, Author: book.Author}).First(&b)
+
+// 	db.Delete(&b)
+// }

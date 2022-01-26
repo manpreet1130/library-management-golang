@@ -33,9 +33,11 @@ func (book *Book) AddBook() *Book {
 	dbBook := &Book{}
 	db := database.GetDB()
 
-	result := db.Where(Book{Title: book.Title, Author: book.Author}).Find(&dbBook)
+	result := db.Where(Book{Title: book.Title, Author: book.Author, CartUUID: uuid.MustParse(ADMIN)}).Find(&dbBook)
 
-	if result.RowsAffected == 1 {
+	// fmt.Println(result.RowsAffected)
+
+	if result.RowsAffected != 0 {
 		dbBook.Quantity += book.Quantity
 		db.Save(&dbBook)
 		return dbBook

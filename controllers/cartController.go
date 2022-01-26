@@ -38,7 +38,7 @@ func AddToCart(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		log.Println(err)
 		w.WriteHeader(http.StatusInternalServerError)
-		w.Write([]byte("Error occured while adding book to cart"))
+		w.Write([]byte("Login as user, currently logged in as admin"))
 		return
 	}
 
