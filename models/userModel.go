@@ -91,7 +91,7 @@ func (user *User) Login() (string, error) {
 	db := database.GetDB()
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.StandardClaims{
 		Issuer:    user.Email,
-		ExpiresAt: time.Now().Add(time.Minute * 5).Unix(),
+		ExpiresAt: time.Now().Add(time.Hour * 5).Unix(),
 	})
 
 	tokenString, err := token.SignedString([]byte(SECRET))

@@ -8,6 +8,6 @@ import (
 func BookRoutes(router *mux.Router) {
 	router.HandleFunc("/books", controllers.GetBooks).Methods("GET")
 	router.HandleFunc("/books", controllers.AddBook).Methods("POST")
-	// router.HandleFunc("/books", controllers.GetBooksByTitle).Methods("GET")
-	// router.HandleFunc("/books/{author}", controllers.GetBooksByAuthor).Methods("GET")
+	router.HandleFunc("/books/title", controllers.GetBooksByTitle).Methods("GET")
+	router.HandleFunc("/books/author", controllers.GetBooksByAuthor).Methods("GET")
 }

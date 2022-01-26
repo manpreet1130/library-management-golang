@@ -69,7 +69,7 @@ func Login(w http.ResponseWriter, r *http.Request) {
 	cookie := http.Cookie{
 		Name:    "Token",
 		Value:   tokenString,
-		Expires: time.Now().Add(time.Minute * 5),
+		Expires: time.Now().Add(time.Hour * 5),
 	}
 
 	http.SetCookie(w, &cookie)

@@ -36,7 +36,7 @@ func (book *Book) AddBook() *Book {
 	dbBook := &Book{}
 	db := database.GetDB()
 
-	result := db.Where(Book{Title: book.Title, Author: book.Author, CartUUID: uuid.MustParse(ADMIN)}).Find(&dbBook)
+	result := db.Where("Title: ? AND Author: ? AND cart_uuid = ?", book.Title, book.Author, uuid.MustParse(ADMIN)).Find(&dbBook)
 
 	// fmt.Println(result.RowsAffected)
 
@@ -54,4 +54,20 @@ func GetBook(title string) *Book {
 	book := &Book{}
 	db.Where("Title = ?", title).Find(&book)
 	return book
+}
+
+func GetBooksByTitle(title string) []Book {
+	db := database.GetDB()
+	books := []Book{}
+
+	db.Where("Title = ? AND cart_uuid = ?", title, uuid.MustParse(ADMIN)).Find(&books)
+	return books
+}
+
+func GetBooksByAuthor(author string) []Book {
+	db := database.GetDB()
+	books := []Book{}
+
+	db.Where("Author = ? AND cart_uuid = ?", author, uuid.MustParse(ADMIN)).Find(&books)
+	return books
 }

@@ -39,7 +39,7 @@ func AddToCart(id uuid.UUID, book *Book) (*Book, error) {
 	}
 
 	dbBook := &Book{}
-	db.Where(Book{Title: book.Title, Author: book.Author}).First(&dbBook)
+	db.Where("Title = ? AND Author = ?", book.Title, book.Author).First(&dbBook)
 
 	if dbBook.Quantity == 0 {
 		return book, errors.New("book out of stock")
@@ -50,7 +50,7 @@ func AddToCart(id uuid.UUID, book *Book) (*Book, error) {
 	}
 
 	userBook := &Book{}
-	result = db.Where(Book{Title: book.Title, Author: book.Author, CartUUID: cart.UUID}).Find(&userBook)
+	result = db.Where("Title = ? AND Author = ? AND cart_uuid = ?", book.Title, book.Author, cart.UUID).Find(&userBook)
 
 	if result.RowsAffected != 0 {
 		userBook.Quantity += book.Quantity
@@ -83,10 +83,10 @@ func RemoveFromCart(id uuid.UUID, book *Book) (uint64, error) {
 	db.Where("user_uuid = ?", id).Find(&cart)
 
 	dbBook := &Book{}
-	db.Where(Book{Title: book.Title, Author: book.Author}).First(&dbBook)
+	db.Where("Title = ? AND Author = ?", book.Title, book.Author).First(&dbBook)
 
 	cartBook := &Book{}
-	result := db.Where(Book{Title: book.Title, Author: book.Author, CartUUID: cart.UUID}).Find(&cartBook)
+	result := db.Where("Title = ? AND Author = ? AND cart_uuid = ?", book.Title, book.Author, cart.UUID).Find(&cartBook)
 
 	if result.RowsAffected == 0 {
 		return 0, errors.New("this book does not exist in the cart")

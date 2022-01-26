@@ -54,3 +54,28 @@ func AddBook(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusOK)
 	w.Write(res)
 }
+
+func GetBooksByTitle(w http.ResponseWriter, r *http.Request) {
+	book := &models.Book{}
+	utils.ParseBody(book, r)
+
+	books := models.GetBooksByTitle(book.Title)
+
+	res, _ := json.Marshal(books)
+
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusOK)
+	w.Write(res)
+}
+
+func GetBooksByAuthor(w http.ResponseWriter, r *http.Request) {
+	book := &models.Book{}
+	utils.ParseBody(book, r)
+
+	books := models.GetBooksByAuthor(book.Author)
+	res, _ := json.Marshal(books)
+
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusOK)
+	w.Write(res)
+}
