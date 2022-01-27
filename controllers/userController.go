@@ -129,37 +129,3 @@ func Checkout(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusOK)
 	w.Write([]byte("Books to be returned within 7 days"))
 }
-
-func Return(w http.ResponseWriter, r *http.Request) {
-	cookie, err := r.Cookie("Token")
-	if err != nil {
-		log.Println("Could not find token cookie")
-		w.WriteHeader(http.StatusNotFound)
-		w.Write([]byte("Please log in to continue"))
-		return
-	}
-
-	user := models.GetUser(cookie)
-	if user == nil {
-		log.Println("could not retrieve user")
-		w.WriteHeader(http.StatusInternalServerError)
-		w.Write([]byte("error occured while fetching user data"))
-		return
-	}
-
-	book := &models.Book{}
-	utils.ParseBody(book, r)
-
-	// // dueAmount, err := user.ReturnBook(book)
-	// // if err != nil {
-	// // 	log.Println(err)
-	// // 	w.WriteHeader(http.StatusBadRequest)
-	// // 	w.Write([]byte("This book was not checked out by user"))
-	// // 	return
-	// // }
-
-	// w.Header().Set("Content-Type", "application/json")
-	// w.WriteHeader(http.StatusOK)
-	// w.Write([]byte(fmt.Sprintf("Amount due for %v is %v rupees", book.Title, dueAmount)))
-
-}

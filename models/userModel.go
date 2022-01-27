@@ -173,23 +173,3 @@ func (user *User) Checkout() {
 		RemoveFromCart(user.UUID, &book)
 	}
 }
-
-func (user *User) ReturnBook(book *Book) (time.Duration, error) {
-	// db := database.GetDB()
-	// cart := &Cart{}
-	// db.Where("user_uuid = ?", user.UUID).Preload("Books").Find(&cart)
-
-	// cartBook := &Book{}
-	// result := db.Where("Title = ? AND Author = ? AND cart_uuid = ?", book.Title, book.Author, cart.UUID).Find(&cartBook)
-
-	// if result.RowsAffected == 0 {
-	// 	return 0, errors.New("this book was not checked out by user")
-	// }
-
-	// if cartBook.Due.After(time.Now()) {
-	// 	return 0, nil
-	// }
-
-	// duration := time.Since(cartBook.Due)
-	return 0, nil
-}
