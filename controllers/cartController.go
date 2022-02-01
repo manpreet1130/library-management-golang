@@ -10,6 +10,8 @@ import (
 	"github.com/manpreet1130/library-management/utils"
 )
 
+// getUser is an internal function which is responsible for retrieving
+// the cookie for token string and using that to get the user
 func getUser(w http.ResponseWriter, r *http.Request) *models.User {
 	cookie, err := r.Cookie("Token")
 	if err != nil {
@@ -29,6 +31,7 @@ func getUser(w http.ResponseWriter, r *http.Request) *models.User {
 	return user
 }
 
+// AddToCart is responsible for adding new books to the logged in user's cart
 func AddToCart(w http.ResponseWriter, r *http.Request) {
 	user := getUser(w, r)
 	book := &models.Book{}
@@ -43,7 +46,7 @@ func AddToCart(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		log.Println(err)
 		w.WriteHeader(http.StatusInternalServerError)
-		w.Write([]byte("Login as user, currently logged in as admin"))
+		w.Write([]byte("error occured while adding to cart"))
 		return
 	}
 
@@ -54,6 +57,7 @@ func AddToCart(w http.ResponseWriter, r *http.Request) {
 	w.Write(res)
 }
 
+// GetCartItems sends back all items present in the user's cart
 func GetCartItems(w http.ResponseWriter, r *http.Request) {
 	user := getUser(w, r)
 	books := models.GetCartItems(user.UUID)
@@ -65,6 +69,7 @@ func GetCartItems(w http.ResponseWriter, r *http.Request) {
 	w.Write(res)
 }
 
+// RemoveItemsFromCart removes any book which is no longer needed or  isn't to be checked out by the user
 func RemoveItemsFromCart(w http.ResponseWriter, r *http.Request) {
 	user := getUser(w, r)
 

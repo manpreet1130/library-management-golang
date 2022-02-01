@@ -9,11 +9,9 @@ import (
 	"github.com/manpreet1130/library-management/utils"
 )
 
-// GetBooks returns a list of books available in the
-// database. User doesn't have to be logged in to access
-// the list of books
+// GetBooks returns a list of books available in the database.
+// User doesn't have to be logged in to access the list of books
 func GetBooks(w http.ResponseWriter, r *http.Request) {
-	// User doesn't need to be logged in to view books
 	books := models.GetBooks()
 
 	res, _ := json.Marshal(books)
@@ -24,9 +22,8 @@ func GetBooks(w http.ResponseWriter, r *http.Request) {
 	w.Write(res)
 }
 
-// AddBook adds a new book to the collection of books
-// and addition of a new book can only be done by
-// user with 'admin' status
+// AddBook adds a new book to the collection of books and addition
+// of a new book can only be done by user with 'admin' status
 func AddBook(w http.ResponseWriter, r *http.Request) {
 	cookie, err := r.Cookie("Token")
 	if err != nil {
@@ -55,6 +52,7 @@ func AddBook(w http.ResponseWriter, r *http.Request) {
 	w.Write(res)
 }
 
+// GetBooksByTitle returns a list of all books present in the database with the entered title
 func GetBooksByTitle(w http.ResponseWriter, r *http.Request) {
 	book := &models.Book{}
 	utils.ParseBody(book, r)
@@ -68,6 +66,7 @@ func GetBooksByTitle(w http.ResponseWriter, r *http.Request) {
 	w.Write(res)
 }
 
+// GetBooksByAuthor retrieves all the books present in the database corresponding to a given author
 func GetBooksByAuthor(w http.ResponseWriter, r *http.Request) {
 	book := &models.Book{}
 	utils.ParseBody(book, r)

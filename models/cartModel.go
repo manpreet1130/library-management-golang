@@ -8,6 +8,10 @@ import (
 	"github.com/manpreet1130/library-management/database"
 )
 
+// Cart struct comprises of the following parameters
+// UUID: primary key
+// UserUUID: corresponds to the user who has ownership of the cart
+// Books: list of books stored in the cart for later checkout
 type Cart struct {
 	gorm.Model
 	UUID     uuid.UUID `gorm:"primary_key"`
@@ -15,6 +19,7 @@ type Cart struct {
 	Books    []Book
 }
 
+// CreateCart takes in the user id as input and returns a reference to a newly created cart
 func CreateCart(id uuid.UUID) *Cart {
 	db := database.GetDB()
 	cart := &Cart{
@@ -25,6 +30,12 @@ func CreateCart(id uuid.UUID) *Cart {
 	return cart
 }
 
+// AddToCart takes in the user id and book to be added as input and
+// returns the book added and any error
+// Checks whether a cart exists for the user and creates one if it doesn't
+// Further checks corresponding to the book take place and quantity of that
+// book for the cart is updated if that book is already present in the cart.
+// If no book with the title and author exist in the cart, a new entry is added
 func AddToCart(id uuid.UUID, book *Book) (*Book, error) {
 	db := database.GetDB()
 
@@ -32,10 +43,6 @@ func AddToCart(id uuid.UUID, book *Book) (*Book, error) {
 	result := db.Where("user_uuid = ?", id).Preload("Books").Find(&cart)
 	if result.RowsAffected == 0 {
 		cart = CreateCart(id)
-	}
-
-	if cart.UUID == uuid.MustParse(ADMIN) {
-		return book, errors.New("admin logged in, log in as user")
 	}
 
 	dbBook := &Book{}
@@ -67,6 +74,8 @@ func AddToCart(id uuid.UUID, book *Book) (*Book, error) {
 	return book, nil
 }
 
+// GetCartItems returns a list of all the books present in the cart corresponding
+// to the user whose user id is passed as input
 func GetCartItems(id uuid.UUID) []Book {
 	db := database.GetDB()
 	cart := &Cart{}
@@ -76,6 +85,10 @@ func GetCartItems(id uuid.UUID) []Book {
 	return cart.Books
 }
 
+// RemoveFromCart checks for the corresponding book present in the cart and
+// removes the specified quantity from the cart.
+// If the quantity for any removed book comes to 0, that book is than removed from
+// the cart and remaining quantity is returned.
 func RemoveFromCart(id uuid.UUID, book *Book) (uint64, error) {
 	db := database.GetDB()
 
@@ -109,11 +122,4 @@ func RemoveFromCart(id uuid.UUID, book *Book) (uint64, error) {
 	db.Save(&dbBook)
 	return cartBook.Quantity, nil
 
-}
-
-func EmptyCart(id uuid.UUID) {
-	// db := database.GetDB()
-	// cart := &Cart{}
-	// db.Where("user_uuid = ?", id).Find(&cart)
-	// db.Delete(&cart)
 }

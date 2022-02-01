@@ -4,6 +4,7 @@ import (
 	"errors"
 	"log"
 	"net/http"
+	"os"
 	"time"
 
 	"github.com/dgrijalva/jwt-go"
@@ -12,8 +13,6 @@ import (
 	"github.com/manpreet1130/library-management/database"
 	"golang.org/x/crypto/bcrypt"
 )
-
-const SECRET = "secretkey"
 
 // User consists of the following fields
 // FirstName is a required field and must consist of a minimum of 2 and a maximum of 30 characters
@@ -94,7 +93,7 @@ func (user *User) Login() (string, error) {
 		ExpiresAt: time.Now().Add(time.Hour * 5).Unix(),
 	})
 
-	tokenString, err := token.SignedString([]byte(SECRET))
+	tokenString, err := token.SignedString([]byte(os.Getenv("SECRET")))
 	dbUser := &User{}
 	db.Where("Email = ?", user.Email).First(&dbUser)
 
@@ -106,13 +105,12 @@ func (user *User) Login() (string, error) {
 
 // AuthenticateUser extracts the user from the cookie generated and
 // checks whether permission is granted for the user or isn't.
-// Permission is only granted to the user who has authentication
-// status as 'admin'
+// Permission is only granted to the user who has authentication status as 'admin'
 // AuthenticateUser takes in a cookie as input and returns an error if any
 func AuthenticateUser(cookie *http.Cookie) error {
 	db := database.GetDB()
 	token, err := jwt.ParseWithClaims(cookie.Value, &jwt.StandardClaims{}, func(t *jwt.Token) (interface{}, error) {
-		return []byte(SECRET), nil
+		return []byte(os.Getenv("SECRET")), nil
 	})
 	if err != nil {
 		return err
@@ -139,10 +137,11 @@ func GetUsers() []User {
 	return users
 }
 
+// GetUser takes in a cookie as input and returns a user with the corresponding credentials
 func GetUser(cookie *http.Cookie) *User {
 	db := database.GetDB()
 	token, err := jwt.ParseWithClaims(cookie.Value, &jwt.StandardClaims{}, func(t *jwt.Token) (interface{}, error) {
-		return []byte(SECRET), nil
+		return []byte(os.Getenv("SECRET")), nil
 	})
 	if err != nil {
 		return nil
@@ -156,6 +155,7 @@ func GetUser(cookie *http.Cookie) *User {
 	return user
 }
 
+// Checkout updates the Due date on each of the books present in the cart and empties the cart
 func (user *User) Checkout() {
 	db := database.GetDB()
 

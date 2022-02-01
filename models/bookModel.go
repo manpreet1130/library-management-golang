@@ -1,6 +1,7 @@
 package models
 
 import (
+	"os"
 	"time"
 
 	"github.com/google/uuid"
@@ -13,6 +14,8 @@ import (
 // Author: required field
 // Genre: required field
 // Quantity: required field
+// CartUUID: one-to-many relationship between cart and books
+// Due: On checkout this field is updated
 type Book struct {
 	gorm.Model
 	Title    string    `json:"title" validate:"required,min=2,max=50"`
@@ -23,22 +26,21 @@ type Book struct {
 	Due      time.Time
 }
 
-const ADMIN = "00000000-0000-0000-0000-000000000000"
-
+// GetBooks returns a list all books present in the database
 func GetBooks() []Book {
 	db := database.GetDB()
 	books := []Book{}
-	db.Where("cart_uuid = ?", ADMIN).Find(&books)
+	db.Where("cart_uuid = ?", os.Getenv("ADMIN")).Find(&books)
 	return books
 }
 
+// AddBook enters a new book into the database and updates the quantity of
+// book if one with the same title and author already exists
 func (book *Book) AddBook() *Book {
 	dbBook := &Book{}
 	db := database.GetDB()
 
-	result := db.Where("Title = ? AND Author = ? AND cart_uuid = ?", book.Title, book.Author, uuid.MustParse(ADMIN)).Find(&dbBook)
-
-	// fmt.Println(result.RowsAffected)
+	result := db.Where("Title = ? AND Author = ? AND cart_uuid = ?", book.Title, book.Author, uuid.MustParse(os.Getenv("ADMIN"))).Find(&dbBook)
 
 	if result.RowsAffected != 0 {
 		dbBook.Quantity += book.Quantity
@@ -49,6 +51,7 @@ func (book *Book) AddBook() *Book {
 	return book
 }
 
+// GetBook takes in a title as input and returns a book with the corresponding title
 func GetBook(title string) *Book {
 	db := database.GetDB()
 	book := &Book{}
@@ -56,18 +59,22 @@ func GetBook(title string) *Book {
 	return book
 }
 
+// GetBooksByTitle takes in title as input and returns a list of books with the corresponding
+// title present in the database
 func GetBooksByTitle(title string) []Book {
 	db := database.GetDB()
 	books := []Book{}
 
-	db.Where("Title = ? AND cart_uuid = ?", title, uuid.MustParse(ADMIN)).Find(&books)
+	db.Where("Title = ? AND cart_uuid = ?", title, uuid.MustParse(os.Getenv("ADMIN"))).Find(&books)
 	return books
 }
 
+// GetBooksByAuthor takes in author as input and returns a list of books with the corresponding
+// author present in the database
 func GetBooksByAuthor(author string) []Book {
 	db := database.GetDB()
 	books := []Book{}
 
-	db.Where("Author = ? AND cart_uuid = ?", author, uuid.MustParse(ADMIN)).Find(&books)
+	db.Where("Author = ? AND cart_uuid = ?", author, uuid.MustParse(os.Getenv("ADMIN"))).Find(&books)
 	return books
 }

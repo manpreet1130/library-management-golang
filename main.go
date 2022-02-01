@@ -10,11 +10,14 @@ import (
 	"time"
 
 	"github.com/gorilla/mux"
+	"github.com/joho/godotenv"
 	"github.com/manpreet1130/library-management/database"
 	"github.com/manpreet1130/library-management/models"
 	"github.com/manpreet1130/library-management/routes"
 )
 
+// init function used to initialize and connect to the database,
+// create required tables in the database and add required foreign keys
 func init() {
 	database.Connect()
 	db := database.GetDB()
@@ -25,7 +28,10 @@ func init() {
 func main() {
 	fmt.Println("Starting server..")
 
-	// port := os.Getenv("PORT")
+	if err := godotenv.Load(); err != nil {
+		log.Fatal("Could not load env file")
+	}
+
 	router := mux.NewRouter()
 
 	routes.UserRoutes(router)
@@ -34,7 +40,7 @@ func main() {
 	http.Handle("/", router)
 
 	server := &http.Server{
-		Addr:    ":8080",
+		Addr:    os.Getenv("PORT"),
 		Handler: router,
 	}
 

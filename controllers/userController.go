@@ -10,9 +10,8 @@ import (
 	"github.com/manpreet1130/library-management/utils"
 )
 
-// Signup parses the request and checks whether a user with
-// a particular email already exists, and if it doesn't, a new
-// user is created
+// Signup parses the request and checks whether a user with a particular
+// email already exists, and if it doesn't, a new user is created
 func Signup(w http.ResponseWriter, r *http.Request) {
 	user := &models.User{}
 
@@ -36,12 +35,10 @@ func Signup(w http.ResponseWriter, r *http.Request) {
 	log.Printf("[SIGNUP] Signup successful for %v\n", createdUser.FirstName)
 }
 
-// Login parses the request containing the email and password,
-// checks whether a user with the given email exists and further
-// checks whether the password entered corresponds to the the hashed
-// password saved in the database.
-// Once these two conditions are confirmed, a new token is generated
-// and saved as a cookie
+// Login parses the request containing the email and password, checks whether a user
+// with the given email exists and further checks whether the password entered
+// corresponds to the the hashed password saved in the database.
+// Once these two conditions are confirmed, a new token is generated and saved as a cookie
 func Login(w http.ResponseWriter, r *http.Request) {
 	user := &models.User{}
 
@@ -64,8 +61,6 @@ func Login(w http.ResponseWriter, r *http.Request) {
 		log.Fatal(err)
 	}
 
-	// fmt.Println(tokenString)
-
 	cookie := http.Cookie{
 		Name:    "Token",
 		Value:   tokenString,
@@ -78,9 +73,9 @@ func Login(w http.ResponseWriter, r *http.Request) {
 	w.Write([]byte("Login successful"))
 }
 
-// GetUsers firstly checks whether there exists a cookie corresponding
-// to the request sent and further authentication is done on the user
-// as only the user with authentication = ADMIN is allowed to receive // the list of users
+// GetUsers firstly checks whether there exists a cookie corresponding to the request
+// sent and further authentication is done on the user as only the
+// user authentication = ADMIN is allowed to receive the list of users
 func GetUsers(w http.ResponseWriter, r *http.Request) {
 	cookie, err := r.Cookie("Token")
 	if err != nil {
@@ -106,6 +101,7 @@ func GetUsers(w http.ResponseWriter, r *http.Request) {
 	w.Write(res)
 }
 
+// Checkout performs the book checkout for a particular user
 func Checkout(w http.ResponseWriter, r *http.Request) {
 	cookie, err := r.Cookie("Token")
 	if err != nil {
