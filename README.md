@@ -1,6 +1,6 @@
 # library-management-golang
 
-Backend system designed to encompass all the features needed for a functioning library.
+Backend system designed to encompass all the features needed for a functioning library. Router implementation done using the gorilla/mux package and database communication done with the help of the gorm library.
 
 
 ## Table of Contents
